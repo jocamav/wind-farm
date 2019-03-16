@@ -29,7 +29,8 @@ public class EnergyFarmController {
 	private FarmService farmService;
 	
 	@GetMapping("/capacity/{type}/{id}")
-	public EnergyFarmDto getFarmCapacityPerDay(@PathVariable String type, @PathVariable Long id,
+	public EnergyFarmDto getFarmCapacityPerDay(
+			@PathVariable String type, @PathVariable Long id,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
 		log.info(String.format("Getting capacity of %s farm <%d> from %s to %s", type, id, dateFrom, dateTo));
