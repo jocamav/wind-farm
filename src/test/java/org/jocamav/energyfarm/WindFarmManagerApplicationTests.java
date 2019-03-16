@@ -1,4 +1,4 @@
-package org.jocamav.windfarm;
+package org.jocamav.energyfarm;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

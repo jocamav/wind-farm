@@ -1,0 +1,39 @@
+= Farm capacity Manager 
+
+== Context
+
+The task is to create a RESTful API which allows to query on daily basis (daily aggregated) the capacity factor and the electricity actually produced of a wind farm for a defined period (startDate, endDate).
+
+=== Get the capacity of a Farm
+
+==== Valid request
+
+.path params
+include::{snippets}/energy-farm-controller-test/get-farm-capacity/path-parameters.adoc[]
+
+.request params
+include::{snippets}/energy-farm-controller-test/get-farm-capacity/request-parameters.adoc[]
+
+.response fields
+include::{snippets}/energy-farm-controller-test/get-farm-capacity/response-fields.adoc[]
+
+.request
+include::{snippets}/energy-farm-controller-test/get-farm-capacity/http-request.adoc[]
+
+.response
+include::{snippets}/energy-farm-controller-test/get-farm-capacity/http-response.adoc[]
+
+==== Not valid request or errors
+
+.response fields
+include::{snippets}/energy-farm-controller-test/get-farm-capacity-with-missing-parameter/response-fields.adoc[]
+
+.request
+include::{snippets}/energy-farm-controller-test/get-farm-capacity-with-missing-parameter/http-request.adoc[]
+
+.response
+include::{snippets}/energy-farm-controller-test/get-farm-capacity-with-missing-parameter/http-response.adoc[]
+
+
+
+As you can see the format is very simple, and in fact you always get the same message.
