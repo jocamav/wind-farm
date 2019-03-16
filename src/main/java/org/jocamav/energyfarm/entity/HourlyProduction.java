@@ -1,5 +1,8 @@
 package org.jocamav.energyfarm.entity;
 
+import java.sql.Timestamp;
+import java.util.Calendar;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,13 +17,13 @@ public class HourlyProduction {
     private Long id;
     @ManyToOne
 	private WindFarm windFarm;
-	private Long timestamp;
+	private Timestamp timestamp;
 	private Double electricityProduced;
 	
 	public HourlyProduction() {
 	}
 
-	public HourlyProduction(WindFarm windFarm, Long timestamp, Double electricityProduced) {
+	public HourlyProduction(WindFarm windFarm, Timestamp timestamp, Double electricityProduced) {
 		super();
 		this.windFarm = windFarm;
 		this.timestamp = timestamp;
@@ -35,11 +38,11 @@ public class HourlyProduction {
 		this.windFarm = windFarm;
 	}
 
-	public Long getTimestamp() {
+	public Timestamp getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(Long timestamp) {
+	public void setTimestamp(Timestamp timestamp) {
 		this.timestamp = timestamp;
 	}
 
@@ -53,7 +56,7 @@ public class HourlyProduction {
 
 	@Override
 	public String toString() {
-		return String.format("HourlyProduction [id=%d, windFarm=%d, timestamp=%d, electricityProduced=%f]", 
+		return String.format("HourlyProduction [id=%d, windFarm=%d, timestamp=%s, electricityProduced=%f]", 
 				id, windFarm.getId(), timestamp, electricityProduced);
 	}
 	

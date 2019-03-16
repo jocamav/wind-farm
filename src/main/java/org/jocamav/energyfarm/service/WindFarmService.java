@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class WindFarmService implements FarmService{
 
-
 	private static final Logger log = LoggerFactory.getLogger(WindFarmService.class);
 	
 	@Override
