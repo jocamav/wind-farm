@@ -1,10 +1,5 @@
 package org.jocamav.energyfarm.service;
 
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jocamav.energyfarm.dto.CapacityPerDayDto;
 import org.jocamav.energyfarm.dto.EnergyFarmDto;
 import org.jocamav.energyfarm.dto.WindFarmDto;
 import org.slf4j.Logger;
