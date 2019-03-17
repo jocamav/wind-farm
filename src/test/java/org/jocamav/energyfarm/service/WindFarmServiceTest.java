@@ -7,17 +7,15 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-
 import javax.persistence.EntityNotFoundException;
 
+import org.assertj.core.data.Percentage;
 import org.jocamav.energyfarm.dto.EnergyFarmDto;
 import org.jocamav.energyfarm.dto.WindFarmDto;
 import org.jocamav.energyfarm.entity.HourlyProduction;
 import org.jocamav.energyfarm.entity.WindFarm;
 import org.jocamav.energyfarm.repository.HourlyProductionRepository;
 import org.jocamav.energyfarm.repository.WindFarmRepository;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -51,14 +49,12 @@ public class WindFarmServiceTest {
 	private WindFarm madridFarm;
 	private LocalDate localDateFrom;
 	private LocalDate localDateTo;
-	
-	@Before
-	public void setUp() {
-		localDateFrom = LocalDate.parse("2018-01-01");
-		localDateTo = LocalDate.parse("2018-02-28");
+
+	private void setUpMocksFromDates(String dateFromAsStr, String dateToAsStr) {
+		localDateFrom = LocalDate.parse(dateFromAsStr);
+		localDateTo = LocalDate.parse(dateToAsStr);
 		madridFarm = new WindFarm(FARM_ID, "Madrid Farm", 10.0, MADRID_ZONE);
 		Mockito.when(windFarmRepository.getOne(FARM_ID)).thenReturn(madridFarm);
-		Mockito.when(windFarmRepository.getOne(2L)).thenThrow(new EntityNotFoundException("Farm not found"));
 		Mockito.when(dateUtilsService.getTimeStampFromLocalDate(any(LocalDate.class), eq(MADRID_ZONE))).thenReturn(new Timestamp(0L));
 		List<HourlyProduction> madridProduction = generateProduction(madridFarm, localDateFrom, localDateTo);
 		Mockito.when(hourlyProductionRepository.findByWindFarmWithTimestampBetween(eq(madridFarm), any(Timestamp.class), any(Timestamp.class)))
@@ -86,33 +82,85 @@ public class WindFarmServiceTest {
 			.withId(id)
 			.withWindFarm(windFarm)
 			.withLocalDateTime(localDateTime)
-			.withElectricityProduced(generateRandomValue(windFarm))
+			.withElectricityProduced(generateRandomValue(windFarm, localDateTime))
 			.build();
 			
 	}
 	
-	private Double generateRandomValue(WindFarm windFarm) {
-		Random r = new Random();
-		return windFarm.getCapacity() * r.nextDouble();
+	private Double generateRandomValue(WindFarm windFarm, LocalDateTime localDateTime) {
+		return (2.0 * localDateTime.getDayOfMonth()) / windFarm.getCapacity();
 	}
 	
 	@Test
-	public void getTimestampFromLocalDate() {
+	public void getWindFarmDtoForTwoMonths() {
+		setUpMocksFromDates("2018-01-01", "2018-02-28");
 		
 		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
 
-		assertThat(windFarmDto).isNotNull();
-		assertThat(windFarmDto.getId()).isEqualTo(FARM_ID);
-		assertThat(windFarmDto.getZoneId()).isEqualTo(MADRID_ZONE);
+		assertValues(windFarmDto);
+		
+	}
+	
+	@Test
+	public void getWindFarmDtoForOneDay() {
+		setUpMocksFromDates("2018-01-01", "2018-01-01");
+		
+		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
+		
+		assertValues(windFarmDto);
+		
+	}
+	
+	@Test
+	public void getWindFarmDtoForTwoDaysWithChangeOfYear() {
+		setUpMocksFromDates("2018-12-31", "2019-01-01");
+		
+		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
+		
+		assertValues(windFarmDto);
+		
+	}
+	
+	@Test
+	public void getWindFarmDtoForInvalidRange() {
+		setUpMocksFromDates("2019-01-02", "2019-01-01");
+		
+		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
+		
+		assertMainDataOfDto(windFarmDto);
+		assertThat(windFarmDto.getProducedEnergy()).isEqualTo(0.0);
+		assertThat(windFarmDto.getDailyCapacity().size()).isEqualTo(0);
+		
+	}
+
+	private double expectedResult() {
+		Double result = 0.0;
+		LocalDate localDate = localDateFrom;
+		while(!localDate.isAfter(localDateTo)) {
+			result += (generateRandomValue(madridFarm, localDate.atStartOfDay())) * 24;
+			localDate= localDate.plusDays(1);
+		}
+		return result;
+	}
+
+	private void assertValues(WindFarmDto windFarmDto) {
+		assertMainDataOfDto(windFarmDto);
 		assertThat(windFarmDto.getProducedEnergy()).isGreaterThan(0.0);
+		assertThat(windFarmDto.getProducedEnergy()).isCloseTo(expectedResult(), Percentage.withPercentage(0.001));
 		assertThat(windFarmDto.getDailyCapacity().size()).isGreaterThan(0);
 		Long daysOfDifference = ChronoUnit.DAYS.between(localDateFrom, localDateTo) + 1;
 		assertThat(windFarmDto.getDailyCapacity().size()).isLessThanOrEqualTo(daysOfDifference.intValue());
-		
+	}
+
+	private void assertMainDataOfDto(WindFarmDto windFarmDto) {
+		assertThat(windFarmDto).isNotNull();
+		assertThat(windFarmDto.getId()).isEqualTo(FARM_ID);
+		assertThat(windFarmDto.getZoneId()).isEqualTo(MADRID_ZONE);
 	}
 	
 	@Test(expected = EntityNotFoundException.class)
 	public void getCapacityForNotExistingFarm() {
+		Mockito.when(windFarmRepository.getOne(2L)).thenThrow(new EntityNotFoundException("Farm not found"));
 		
 		EnergyFarmDto windFarmDto = windFarmService.getEnergyFarmCapacity(2L,localDateFrom,localDateTo);
 		
