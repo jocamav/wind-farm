@@ -11,6 +11,6 @@ import org.springframework.data.jpa.repository.Query;
 public interface HourlyProductionRepository extends JpaRepository<HourlyProduction, Long> {
 	List<HourlyProduction> findByWindFarm(WindFarm windFarm);
 	
-	@Query("select hp from HourlyProduction hp where hp.windFarm=?1 and hp.timestamp>=?2 and hp.timestamp<=?3")
+	@Query("select hp from HourlyProduction hp where hp.windFarm=?1 and hp.timestamp>=?2 and hp.timestamp<=?3 order by hp.timestamp asc")
 	List<HourlyProduction> findByWindFarmWithTimestampBetween(WindFarm windFarm, Timestamp timeFrom, Timestamp timeTo);
 }

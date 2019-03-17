@@ -37,10 +37,10 @@ public class HourlyProductionRepositoryTest {
 
 		// save a few of farms
 		windFarmMadrid = windFarmRepository.save(new WindFarm("Farm A", 10.0, ZoneId.of("Europe/Madrid")));
-		hourlyProductionRepository.save(getHourlyProduction(windFarmMadrid, 4.1, 2018, 10, 1, 1, 1));
-		hourlyProductionRepository.save(getHourlyProduction(windFarmMadrid, 4.5, 2018, 10, 2, 1, 1));
 		hourlyProductionRepository.save(getHourlyProduction(windFarmMadrid, 4.9, 2018, 10, 5, 1, 1));
 		hourlyProductionRepository.save(getHourlyProduction(windFarmMadrid, 5.1, 2018, 10, 5, 2, 1));
+		hourlyProductionRepository.save(getHourlyProduction(windFarmMadrid, 4.1, 2018, 10, 1, 1, 1));
+		hourlyProductionRepository.save(getHourlyProduction(windFarmMadrid, 4.5, 2018, 10, 2, 1, 1));
 		windFarmZurich = windFarmRepository.save(new WindFarm("Farm D", 13.0, ZoneId.of("Europe/Zurich")));
 		hourlyProductionRepository.save(getHourlyProduction(windFarmZurich, 5.1, 2018, 10, 5, 1, 1));
 		hourlyProductionRepository.save(getHourlyProduction(windFarmZurich, 5.1, 2018, 10, 5, 2, 1));
@@ -89,18 +89,30 @@ public class HourlyProductionRepositoryTest {
 		Timestamp timeTo = getTimeStamp(2018, 10, 5, 2, 0, windFarmMadrid.getZoneId()); //2018-10-5 02:00
 		Collection<HourlyProduction> energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
 		assertThat(energyProductionsOfMadrid.size()).isEqualTo(2);
+		checkOrderOfTimeStamps(energyProductionsOfMadrid);
 
 		timeTo = getTimeStamp(2018, 10, 5, 2, 1, windFarmMadrid.getZoneId()); //2018-10-5 02:01
 		energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
 		assertThat(energyProductionsOfMadrid.size()).isEqualTo(3);
-
+		checkOrderOfTimeStamps(energyProductionsOfMadrid);
+		
 		timeFrom = getTimeStamp(2018, 10, 1, 1, 2, windFarmMadrid.getZoneId()); //2018-10-1 01:02
 		energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
 		assertThat(energyProductionsOfMadrid.size()).isEqualTo(3);
+		checkOrderOfTimeStamps(energyProductionsOfMadrid);
 
 		timeFrom = getTimeStamp(2018, 10, 1, 1, 1, windFarmMadrid.getZoneId()); //2018-10-1 01:02
 		energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
 		assertThat(energyProductionsOfMadrid.size()).isEqualTo(4);
+		checkOrderOfTimeStamps(energyProductionsOfMadrid);
+	}
+	
+	private void checkOrderOfTimeStamps(Collection<HourlyProduction> energyProductions) {
+		long previousTimestamp = 0;
+		for(HourlyProduction hourlyProduction : energyProductions) {
+			assertThat(hourlyProduction.getTimestamp().getTime()).isGreaterThan(previousTimestamp);
+			previousTimestamp = hourlyProduction.getTimestamp().getTime();
+		}
 	}
 	
 }
