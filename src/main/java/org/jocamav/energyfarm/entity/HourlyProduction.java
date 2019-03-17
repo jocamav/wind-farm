@@ -1,6 +1,9 @@
 package org.jocamav.energyfarm.entity;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 
 import javax.persistence.Entity;
@@ -60,6 +63,32 @@ public class HourlyProduction {
 				id, windFarm.getId(), timestamp, electricityProduced);
 	}
 	
-	
+	public static class Builder {
+		private WindFarm windFarm;
+		private String dateAsString;
+		private Double electricityProduced;
+		
+		public Builder withWindFarm(WindFarm windFarm) {
+			this.windFarm = windFarm;
+			return this;
+		}
+
+		public Builder withElectricityProduced(Double electricityProduced) {
+			this.electricityProduced = electricityProduced;
+			return this;
+		}
+		
+		public Builder withLocalDate(String dateAsString) {
+			this.dateAsString = dateAsString;
+			return this;
+		}
+		
+		public HourlyProduction build() {
+			LocalDateTime localDateTime = LocalDateTime.parse(dateAsString);
+			ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, windFarm.getZoneId());
+			HourlyProduction hourlyProduction =  new HourlyProduction(windFarm, Timestamp.from(zonedDateTime.toInstant()), electricityProduced);
+			return hourlyProduction;
+		}
+	}
 	
 }
