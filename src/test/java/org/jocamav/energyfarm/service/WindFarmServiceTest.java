@@ -161,13 +161,14 @@ public class WindFarmServiceTest {
 		);
 	}
 
+	@Test
 	public void getWindFarmDtoForOneMonthWithFullProduction() {
 		setUpMocksFromDates("2018-10-01", "2018-10-31", GenerationType.MAX);
 		
 		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
 		
 		assertMainDataOfDto(windFarmDto);
-		assertThat(windFarmDto.getProducedEnergy()).isEqualTo(31);
+		assertThat(windFarmDto.getProducedEnergy()).isEqualTo(31*24*10);
 		windFarmDto.getDailyCapacity().forEach( dailyCapacity ->
 			assertThat(dailyCapacity.getCapacity()).isEqualTo(1.0)
 		);
