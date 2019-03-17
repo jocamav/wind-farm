@@ -37,15 +37,20 @@ public class WindFarmManagerApplication {
 		WindFarmRepository windFarmRepository = ctx.getBean(WindFarmRepository.class);
 		HourlyProductionRepository hourlyProductionRepository = ctx.getBean(HourlyProductionRepository.class);
 		
-		WindFarm windFarmMadrid = windFarmRepository.save(new WindFarm("Farm of Madrid", 10.0, ZoneId.of("Europe/Madrid")));
-		WindFarm windFarmZurich = windFarmRepository.save(new WindFarm("Farm of Zurich", 10.0, ZoneId.of("Europe/Zurich")));
-		WindFarm windFarmKiev = windFarmRepository.save(new WindFarm("Farm of Kiev", 10.0, ZoneId.of("Europe/Kiev")));
-		generateProduction(hourlyProductionRepository, windFarmMadrid);
-		log.info(String.format("Created farm %s", windFarmMadrid.toString()));
-		generateProduction(hourlyProductionRepository, windFarmZurich);
-		log.info(String.format("Created farm %s", windFarmZurich.toString()));
-		generateProduction(hourlyProductionRepository, windFarmKiev);
-		log.info(String.format("Created farm %s", windFarmKiev.toString()));
+		//Init the Database
+		if(windFarmRepository.findAll().size() == 0 ) {
+			log.info("The Database is empty, let's create some data");
+			WindFarm windFarmMadrid = windFarmRepository.save(new WindFarm("Farm of Madrid", 10.0, ZoneId.of("Europe/Madrid")));
+			WindFarm windFarmZurich = windFarmRepository.save(new WindFarm("Farm of Zurich", 10.0, ZoneId.of("Europe/Zurich")));
+			WindFarm windFarmKiev = windFarmRepository.save(new WindFarm("Farm of Kiev", 10.0, ZoneId.of("Europe/Kiev")));
+			generateProduction(hourlyProductionRepository, windFarmMadrid);
+			log.info(String.format("Created farm %s", windFarmMadrid.toString()));
+			generateProduction(hourlyProductionRepository, windFarmZurich);
+			log.info(String.format("Created farm %s", windFarmZurich.toString()));
+			generateProduction(hourlyProductionRepository, windFarmKiev);
+			log.info(String.format("Created farm %s", windFarmKiev.toString()));
+		}
+		log.info("Ready!!!!");
 	}
 	
 	private static void generateProduction(HourlyProductionRepository hourlyProductionRepository, WindFarm windFarm) {

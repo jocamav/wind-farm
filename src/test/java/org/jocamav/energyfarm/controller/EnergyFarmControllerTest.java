@@ -21,6 +21,7 @@ import org.jocamav.energyfarm.dto.CapacityPerDayDto;
 import org.jocamav.energyfarm.dto.EnergyFarmDto;
 import org.jocamav.energyfarm.dto.WindFarmDto;
 import org.jocamav.energyfarm.service.FarmService;
+import org.jocamav.energyfarm.service.FarmServiceFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +43,9 @@ public class EnergyFarmControllerTest {
 	@Autowired
     private MockMvc mockMvc;
 	
+	@MockBean 
+	FarmServiceFactory farmServiceFactory;
+	
 	@MockBean
 	private FarmService farmService;
 
@@ -49,6 +53,7 @@ public class EnergyFarmControllerTest {
 	public void setUp() {
 		Mockito.when(farmService.getEnergyFarmCapacity(eq(1L), any(LocalDate.class), any(LocalDate.class))).thenReturn(buildEnergyFarmDto());
 		Mockito.when(farmService.getEnergyFarmCapacity(eq(2L), any(LocalDate.class), any(LocalDate.class))).thenThrow(new RuntimeException("Exception"));
+		Mockito.when(farmServiceFactory.getFarmService("wind")).thenReturn(farmService);
 	}
 	
 	private EnergyFarmDto buildEnergyFarmDto() {

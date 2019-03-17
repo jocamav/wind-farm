@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.jocamav.energyfarm.dto.EnergyFarmDto;
 import org.jocamav.energyfarm.dto.Error;
 import org.jocamav.energyfarm.service.FarmService;
+import org.jocamav.energyfarm.service.FarmServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class EnergyFarmController {
 	private static final Logger log = LoggerFactory.getLogger(EnergyFarmController.class);
 	
 	@Autowired
-	private FarmService farmService;
+	private FarmServiceFactory farmServiceFactory;
 	
 	@GetMapping("/capacity/{type}/{id}")
 	public EnergyFarmDto getFarmCapacityPerDay(
@@ -34,7 +35,12 @@ public class EnergyFarmController {
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
 		log.info(String.format("Getting capacity of %s farm <%d> from %s to %s", type, id, dateFrom, dateTo));
+		FarmService farmService = getFarmService(type);
 		return farmService.getEnergyFarmCapacity(id, dateFrom, dateTo);
+	}
+	
+	private FarmService getFarmService(String type) {
+		return farmServiceFactory.getFarmService(type);
 	}
 	
 	@ExceptionHandler(Exception.class)
