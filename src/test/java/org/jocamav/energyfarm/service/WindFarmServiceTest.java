@@ -32,6 +32,10 @@ import static org.mockito.ArgumentMatchers.eq;
 @SpringBootTest(classes = {WindFarmService.class})
 public class WindFarmServiceTest {
 	
+	public enum GenerationType {
+		ZERO, CALCULATED, MAX
+	}
+	
 	@Autowired
 	private WindFarmService windFarmService;
 
@@ -50,18 +54,18 @@ public class WindFarmServiceTest {
 	private LocalDate localDateFrom;
 	private LocalDate localDateTo;
 
-	private void setUpMocksFromDates(String dateFromAsStr, String dateToAsStr) {
+	private void setUpMocksFromDates(String dateFromAsStr, String dateToAsStr, GenerationType generationType) {
 		localDateFrom = LocalDate.parse(dateFromAsStr);
 		localDateTo = LocalDate.parse(dateToAsStr);
 		madridFarm = new WindFarm(FARM_ID, "Madrid Farm", 10.0, MADRID_ZONE);
 		Mockito.when(windFarmRepository.getOne(FARM_ID)).thenReturn(madridFarm);
 		Mockito.when(dateUtilsService.getTimestampFromLocalDate(any(LocalDate.class), eq(MADRID_ZONE))).thenReturn(new Timestamp(0L));
-		List<HourlyProduction> madridProduction = generateProduction(madridFarm, localDateFrom, localDateTo);
+		List<HourlyProduction> madridProduction = generateProduction(madridFarm, localDateFrom, localDateTo, generationType);
 		Mockito.when(hourlyProductionRepository.findByWindFarmWithTimestampBetween(eq(madridFarm), any(Timestamp.class), any(Timestamp.class)))
 			.thenReturn(madridProduction);
 	}
 
-	private List<HourlyProduction> generateProduction(WindFarm windFarm, LocalDate dateFrom, LocalDate dateTo) {
+	private List<HourlyProduction> generateProduction(WindFarm windFarm, LocalDate dateFrom, LocalDate dateTo, GenerationType generationType) {
 		List<HourlyProduction> production = new ArrayList<>();
 		LocalDate currentDay = dateFrom;
 		Long id = 1L;
@@ -69,7 +73,7 @@ public class WindFarmServiceTest {
 			for(int i = 0; i<24; i++) {
 				LocalDateTime localDateTime = currentDay.atStartOfDay();
 				localDateTime = localDateTime.plusHours(i);
-				production.add(getProduction(id, windFarm, localDateTime));
+				production.add(getProduction(id, windFarm, localDateTime, generationType));
 				id++;
 			}
 			currentDay = currentDay.plusDays(1L);
@@ -77,23 +81,34 @@ public class WindFarmServiceTest {
 		return production;
 	}
 	
-	private HourlyProduction getProduction(Long id, WindFarm windFarm, LocalDateTime localDateTime) {
+	private HourlyProduction getProduction(Long id, WindFarm windFarm, LocalDateTime localDateTime, GenerationType generationType) {
 		return new HourlyProduction.Builder()
 			.withId(id)
 			.withWindFarm(windFarm)
 			.withLocalDateTime(localDateTime)
-			.withElectricityProduced(generateRandomValue(windFarm, localDateTime))
+			.withElectricityProduced(generateValue(windFarm, localDateTime, generationType))
 			.build();
 			
 	}
 	
-	private Double generateRandomValue(WindFarm windFarm, LocalDateTime localDateTime) {
-		return (2.0 * localDateTime.getDayOfMonth()) / windFarm.getCapacity();
+	private Double generateValue(WindFarm windFarm, LocalDateTime localDateTime, GenerationType generationType) {
+		if(GenerationType.CALCULATED.equals(generationType)) {
+			return (2.0 * localDateTime.getDayOfMonth()) / windFarm.getCapacity();
+		}
+		else if(GenerationType.MAX.equals(generationType)) {
+			return windFarm.getCapacity();
+		}
+		else if(GenerationType.ZERO.equals(generationType)) {
+			return 0.0;
+		}
+		else {
+			return null;
+		}
 	}
 	
 	@Test
 	public void getWindFarmDtoForTwoMonths() {
-		setUpMocksFromDates("2018-01-01", "2018-02-28");
+		setUpMocksFromDates("2018-01-01", "2018-02-28", GenerationType.CALCULATED);
 		
 		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
 
@@ -103,7 +118,7 @@ public class WindFarmServiceTest {
 	
 	@Test
 	public void getWindFarmDtoForOneDay() {
-		setUpMocksFromDates("2018-01-01", "2018-01-01");
+		setUpMocksFromDates("2018-01-01", "2018-01-01", GenerationType.CALCULATED);
 		
 		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
 		
@@ -113,7 +128,7 @@ public class WindFarmServiceTest {
 	
 	@Test
 	public void getWindFarmDtoForTwoDaysWithChangeOfYear() {
-		setUpMocksFromDates("2018-12-31", "2019-01-01");
+		setUpMocksFromDates("2018-12-31", "2019-01-01", GenerationType.CALCULATED);
 		
 		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
 		
@@ -123,7 +138,7 @@ public class WindFarmServiceTest {
 	
 	@Test
 	public void getWindFarmDtoForInvalidRange() {
-		setUpMocksFromDates("2019-01-02", "2019-01-01");
+		setUpMocksFromDates("2019-01-02", "2019-01-01", GenerationType.CALCULATED);
 		
 		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
 		
@@ -132,12 +147,37 @@ public class WindFarmServiceTest {
 		assertThat(windFarmDto.getDailyCapacity().size()).isEqualTo(0);
 		
 	}
+	
+	@Test
+	public void getWindFarmDtoForOneMonthWithNoProduction() {
+		setUpMocksFromDates("2018-10-01", "2018-10-31", GenerationType.ZERO);
+		
+		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
+		
+		assertMainDataOfDto(windFarmDto);
+		assertThat(windFarmDto.getProducedEnergy()).isEqualTo(0.0);
+		windFarmDto.getDailyCapacity().forEach( dailyCapacity ->
+			assertThat(dailyCapacity.getCapacity()).isEqualTo(0.0)
+		);
+	}
 
+	public void getWindFarmDtoForOneMonthWithFullProduction() {
+		setUpMocksFromDates("2018-10-01", "2018-10-31", GenerationType.MAX);
+		
+		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
+		
+		assertMainDataOfDto(windFarmDto);
+		assertThat(windFarmDto.getProducedEnergy()).isEqualTo(31);
+		windFarmDto.getDailyCapacity().forEach( dailyCapacity ->
+			assertThat(dailyCapacity.getCapacity()).isEqualTo(1.0)
+		);
+	}
+	
 	private double expectedResult() {
 		Double result = 0.0;
 		LocalDate localDate = localDateFrom;
 		while(!localDate.isAfter(localDateTo)) {
-			result += (generateRandomValue(madridFarm, localDate.atStartOfDay())) * 24;
+			result += (generateValue(madridFarm, localDate.atStartOfDay(), GenerationType.CALCULATED)) * 24;
 			localDate= localDate.plusDays(1);
 		}
 		return result;
@@ -148,6 +188,10 @@ public class WindFarmServiceTest {
 		assertThat(windFarmDto.getProducedEnergy()).isGreaterThan(0.0);
 		assertThat(windFarmDto.getProducedEnergy()).isCloseTo(expectedResult(), Percentage.withPercentage(0.001));
 		assertThat(windFarmDto.getDailyCapacity().size()).isGreaterThan(0);
+		windFarmDto.getDailyCapacity().forEach( dailyCapacity ->
+				assertThat(dailyCapacity.getCapacity()).isLessThan(1.0)
+		);
+		
 		Long daysOfDifference = ChronoUnit.DAYS.between(localDateFrom, localDateTo) + 1;
 		assertThat(windFarmDto.getDailyCapacity().size()).isLessThanOrEqualTo(daysOfDifference.intValue());
 	}

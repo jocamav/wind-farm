@@ -57,11 +57,11 @@ public class WindFarmService implements FarmService{
 	
 	private WindFarmDto getWindFarmDtoFromHourlyProduction(WindFarm windFarm, List<HourlyProduction> farmProduction) {
 		WindFarmDto energyFarmDto = initWindFarmDto(windFarm);
-		addDailyProductionInfo(farmProduction, energyFarmDto);
+		addDailyProductionInfo(farmProduction, energyFarmDto, windFarm);
 		return energyFarmDto;
 	}
 
-	private void addDailyProductionInfo(List<HourlyProduction> farmProduction, WindFarmDto energyFarmDto) {
+	private void addDailyProductionInfo(List<HourlyProduction> farmProduction, WindFarmDto energyFarmDto, WindFarm windFarm) {
 		
 		Double producedEnergy = getTotalEnergyProduced(farmProduction);
 		
@@ -79,7 +79,7 @@ public class WindFarmService implements FarmService{
 			);
 		
 		dailyCapacity = resultGroupByLocaldate.entrySet().stream()
-			.map(entry -> new CapacityPerDayDto(entry.getKey(), entry.getValue()))
+			.map(entry -> new CapacityPerDayDto(entry.getKey(), entry.getValue()/(windFarm.getCapacity()*24)))
 			.collect(Collectors.toList());
 		
 		
@@ -96,7 +96,7 @@ public class WindFarmService implements FarmService{
 	
 	private CapacityPerDayDto getCapacityPerDayDtoFromEntity(HourlyProduction hourlyProduction) {
 		return new CapacityPerDayDto(hourlyProduction.getTimestamp().toLocalDateTime().toLocalDate(), 
-				hourlyProduction.getElectricityProduced() / hourlyProduction.getWindFarm().getCapacity());
+				hourlyProduction.getElectricityProduced());
 	}
 
 
