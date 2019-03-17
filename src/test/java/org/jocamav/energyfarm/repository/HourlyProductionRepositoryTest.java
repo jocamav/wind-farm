@@ -52,7 +52,7 @@ public class HourlyProductionRepositoryTest {
 		return new HourlyProduction.Builder()
 				.withWindFarm(windfarm)
 				.withElectricityProduced(production)
-				.withLocalDate(dateAsString)
+				.withLocalDateTime(dateAsString)
 				.build();
 	}
 	

@@ -9,6 +9,8 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -23,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.internal.matchers.Any;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -42,12 +45,11 @@ public class EnergyFarmControllerTest {
 	
 	@MockBean
 	private FarmService farmService;
-	
 
 	@Before
 	public void setUp() {
-		Mockito.when(farmService.getEnergyFarmCapacity(1L)).thenReturn(buildEnergyFarmDto());
-		Mockito.when(farmService.getEnergyFarmCapacity(2L)).thenThrow(new RuntimeException("Exception"));
+		Mockito.when(farmService.getEnergyFarmCapacity(eq(1L), any(LocalDate.class), any(LocalDate.class))).thenReturn(buildEnergyFarmDto());
+		Mockito.when(farmService.getEnergyFarmCapacity(eq(2L), any(LocalDate.class), any(LocalDate.class))).thenThrow(new RuntimeException("Exception"));
 	}
 	
 	private EnergyFarmDto buildEnergyFarmDto() {

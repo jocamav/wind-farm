@@ -57,6 +57,14 @@ public class HourlyProduction {
 		this.electricityProduced = electricityProduced;
 	}
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
 	@Override
 	public String toString() {
 		return String.format("HourlyProduction [id=%d, windFarm=%d, timestamp=%s, electricityProduced=%f]", 
@@ -64,9 +72,16 @@ public class HourlyProduction {
 	}
 	
 	public static class Builder {
+		private Long id;
 		private WindFarm windFarm;
 		private String dateAsString;
+		private LocalDateTime localDateTime;
 		private Double electricityProduced;
+	
+		public Builder withId(Long id) {
+			this.id = id;
+			return this;
+		}
 		
 		public Builder withWindFarm(WindFarm windFarm) {
 			this.windFarm = windFarm;
@@ -78,15 +93,23 @@ public class HourlyProduction {
 			return this;
 		}
 		
-		public Builder withLocalDate(String dateAsString) {
+		public Builder withLocalDateTime(String dateAsString) {
 			this.dateAsString = dateAsString;
 			return this;
 		}
 		
+		public Builder withLocalDateTime(LocalDateTime localDateTime) {
+			this.localDateTime = localDateTime;
+			return this;
+		}
+		
 		public HourlyProduction build() {
-			LocalDateTime localDateTime = LocalDateTime.parse(dateAsString);
+			if(localDateTime == null) {
+				localDateTime = LocalDateTime.parse(dateAsString);
+			}
 			ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, windFarm.getZoneId());
 			HourlyProduction hourlyProduction =  new HourlyProduction(windFarm, Timestamp.from(zonedDateTime.toInstant()), electricityProduced);
+			hourlyProduction.setId(id);
 			return hourlyProduction;
 		}
 	}

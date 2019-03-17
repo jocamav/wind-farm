@@ -34,7 +34,7 @@ public class EnergyFarmController {
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
 		log.info(String.format("Getting capacity of %s farm <%d> from %s to %s", type, id, dateFrom, dateTo));
-		return farmService.getEnergyFarmCapacity(id);
+		return farmService.getEnergyFarmCapacity(id, dateFrom, dateTo);
 	}
 	
 	@ExceptionHandler(Exception.class)

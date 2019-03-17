@@ -22,6 +22,13 @@ public class WindFarm {
 	public WindFarm() {
 	}
 	
+	public WindFarm(Long id, String name, Double capacity, ZoneId zoneId) {
+		this.id = id;
+		this.name = name;
+		this.capacity = capacity;
+		this.zoneId = zoneId;
+	}
+	
 	public WindFarm(String name, Double capacity, ZoneId zoneId) {
 		this.name = name;
 		this.capacity = capacity;
