@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -69,7 +70,12 @@ public class WindFarmServiceTest {
 		LocalDate currentDay = dateFrom;
 		Long id = 1L;
 		while(!currentDay.isAfter(dateTo)) {
-			production.add(getProduction(id, windFarm, currentDay.atStartOfDay()));
+			for(int i = 0; i<24; i++) {
+				LocalDateTime localDateTime = currentDay.atStartOfDay();
+				localDateTime = localDateTime.plusHours(i);
+				production.add(getProduction(id, windFarm, localDateTime));
+				id++;
+			}
 			currentDay = currentDay.plusDays(1L);
 		}
 		return production;
@@ -93,12 +99,16 @@ public class WindFarmServiceTest {
 	@Test
 	public void getTimestampFromLocalDate() {
 		
-		EnergyFarmDto windFarmDto = windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
+		WindFarmDto windFarmDto = (WindFarmDto) windFarmService.getEnergyFarmCapacity(1L,localDateFrom,localDateTo);
 
 		assertThat(windFarmDto).isNotNull();
 		assertThat(windFarmDto.getId()).isEqualTo(FARM_ID);
 		assertThat(windFarmDto.getZoneId()).isEqualTo(MADRID_ZONE);
 		assertThat(windFarmDto.getProducedEnergy()).isGreaterThan(0.0);
+		assertThat(windFarmDto.getDailyCapacity().size()).isGreaterThan(0);
+		Long daysOfDifference = ChronoUnit.DAYS.between(localDateFrom, localDateTo) + 1;
+		assertThat(windFarmDto.getDailyCapacity().size()).isLessThanOrEqualTo(daysOfDifference.intValue());
+		
 	}
 	
 	@Test(expected = EntityNotFoundException.class)

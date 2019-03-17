@@ -2,8 +2,12 @@ package org.jocamav.energyfarm.service;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.jocamav.energyfarm.dto.CapacityPerDayDto;
 import org.jocamav.energyfarm.dto.EnergyFarmDto;
 import org.jocamav.energyfarm.dto.WindFarmDto;
 import org.jocamav.energyfarm.entity.HourlyProduction;
@@ -53,15 +57,54 @@ public class WindFarmService implements FarmService{
 	}
 	
 	private WindFarmDto getWindFarmDtoFromHourlyProduction(WindFarm windFarm, List<HourlyProduction> farmProduction) {
+		WindFarmDto energyFarmDto = initWindFarmDto(windFarm);
+		addDailyProductionInfo(farmProduction, energyFarmDto);
+		return energyFarmDto;
+	}
+
+	private void addDailyProductionInfo(List<HourlyProduction> farmProduction, WindFarmDto energyFarmDto) {
+		
+		Double producedEnergy = getTotalEnergyProduced(farmProduction);
+		
+		List<CapacityPerDayDto> dailyCapacity;
+		dailyCapacity = farmProduction.stream()
+			.map(hourlyProduction -> getCapacityPerDayDtoFromEntity(hourlyProduction))
+			.collect(Collectors.toList());
+		
+		Map<LocalDate, Double> resultGroupByLocaldate = dailyCapacity.stream()
+			.collect(
+					Collectors.groupingBy(
+							CapacityPerDayDto::getDay,
+							Collectors.summingDouble(CapacityPerDayDto::getCapacity)
+					)
+			);
+		
+		dailyCapacity = resultGroupByLocaldate.entrySet().stream()
+			.map(entry -> new CapacityPerDayDto(entry.getKey(), entry.getValue()))
+			.collect(Collectors.toList());
+		
+		
+		energyFarmDto.setDailyCapacity(dailyCapacity);
+		energyFarmDto.setProducedEnergy(producedEnergy);
+	}
+
+
+	private double getTotalEnergyProduced(List<HourlyProduction> farmProduction) {
+		return farmProduction.stream()
+				.mapToDouble(hourlyProduction -> hourlyProduction.getElectricityProduced())
+				.sum();
+	}
+	
+	private CapacityPerDayDto getCapacityPerDayDtoFromEntity(HourlyProduction hourlyProduction) {
+		return new CapacityPerDayDto(hourlyProduction.getTimestamp().toLocalDateTime().toLocalDate(), 
+				hourlyProduction.getElectricityProduced() / hourlyProduction.getWindFarm().getCapacity());
+	}
+
+
+	private WindFarmDto initWindFarmDto(WindFarm windFarm) {
 		WindFarmDto energyFarmDto = new WindFarmDto();
 		energyFarmDto.setId(windFarm.getId());
 		energyFarmDto.setZoneId(windFarm.getZoneId());
-		Double producedEnergy = 0.0;
-		for( HourlyProduction hourlyProduction : farmProduction) {
-			log.info(String.format("Adding production:%s", hourlyProduction.toString()));
-			producedEnergy += hourlyProduction.getElectricityProduced();
-		}
-		energyFarmDto.setProducedEnergy(producedEnergy);
 		return energyFarmDto;
 	}
 
