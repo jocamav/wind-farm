@@ -10,8 +10,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class DefaultDateUtilsService implements DateUtilsService {
 
-	public Timestamp getTimeStampFromLocalDate(LocalDate localDate, ZoneId zoneId) {
+	public Timestamp getTimestampFromLocalDate(LocalDate localDate, ZoneId zoneId) {
 		ZonedDateTime zonedDateTime = localDate.atStartOfDay(zoneId);
+		return getTimestampFromZonedDateTime(zonedDateTime);
+	}
+
+	public Timestamp getTimestampFromZonedDateTime(ZonedDateTime zonedDateTime) {
 		return Timestamp.from(zonedDateTime.toInstant());
 	}
 

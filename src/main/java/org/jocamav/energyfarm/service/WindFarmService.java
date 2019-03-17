@@ -52,7 +52,7 @@ public class WindFarmService implements FarmService{
 	}
 
 	private Timestamp getTimestampForFarm(LocalDate dateFrom, WindFarm windFarm) {
-		return dateUtilsService.getTimeStampFromLocalDate(dateFrom, windFarm.getZoneId());
+		return dateUtilsService.getTimestampFromLocalDate(dateFrom, windFarm.getZoneId());
 	}
 	
 	private WindFarmDto getWindFarmDtoFromHourlyProduction(WindFarm windFarm, List<HourlyProduction> farmProduction) {

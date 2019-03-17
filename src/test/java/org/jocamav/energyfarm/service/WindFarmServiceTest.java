@@ -55,7 +55,7 @@ public class WindFarmServiceTest {
 		localDateTo = LocalDate.parse(dateToAsStr);
 		madridFarm = new WindFarm(FARM_ID, "Madrid Farm", 10.0, MADRID_ZONE);
 		Mockito.when(windFarmRepository.getOne(FARM_ID)).thenReturn(madridFarm);
-		Mockito.when(dateUtilsService.getTimeStampFromLocalDate(any(LocalDate.class), eq(MADRID_ZONE))).thenReturn(new Timestamp(0L));
+		Mockito.when(dateUtilsService.getTimestampFromLocalDate(any(LocalDate.class), eq(MADRID_ZONE))).thenReturn(new Timestamp(0L));
 		List<HourlyProduction> madridProduction = generateProduction(madridFarm, localDateFrom, localDateTo);
 		Mockito.when(hourlyProductionRepository.findByWindFarmWithTimestampBetween(eq(madridFarm), any(Timestamp.class), any(Timestamp.class)))
 			.thenReturn(madridProduction);
