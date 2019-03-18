@@ -1,7 +1,6 @@
 package org.jocamav.energyfarm;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Random;

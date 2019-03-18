@@ -61,8 +61,8 @@ public class WindFarmServiceTest {
 		Mockito.when(windFarmRepository.getOne(FARM_ID)).thenReturn(madridFarm);
 		Mockito.when(dateUtilsService.getTimestampFromLocalDate(any(LocalDate.class), eq(MADRID_ZONE))).thenReturn(new Timestamp(0L));
 		Mockito.when(dateUtilsService.getNumberOfHoursOfDay(any(LocalDate.class), eq(MADRID_ZONE))).thenReturn(24);
-		Mockito.when(dateUtilsService.getNumberOfHoursOfDay(eq(LocalDate.of(2018, 10, 28)), eq(MADRID_ZONE))).thenReturn(25);
-		Mockito.when(dateUtilsService.getNumberOfHoursOfDay(eq(LocalDate.of(2018, 3, 25)), eq(MADRID_ZONE))).thenReturn(23);
+		Mockito.when(dateUtilsService.getNumberOfHoursOfDay(eq(LocalDate.parse("2018-10-28")), eq(MADRID_ZONE))).thenReturn(25);
+		Mockito.when(dateUtilsService.getNumberOfHoursOfDay(eq(LocalDate.parse("2018-03-25")), eq(MADRID_ZONE))).thenReturn(23);
 		List<HourlyProduction> madridProduction = generateProduction(madridFarm, localDateFrom, localDateTo, generationType);
 		Mockito.when(hourlyProductionRepository.findByWindFarmWithTimestampBetween(eq(madridFarm), any(Timestamp.class), any(Timestamp.class)))
 			.thenReturn(madridProduction);

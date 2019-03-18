@@ -1,6 +1,7 @@
 package org.jocamav.energyfarm.service;
 
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -20,8 +21,10 @@ public class DefaultDateUtilsService implements DateUtilsService {
 	}
 
 	public int getNumberOfHoursOfDay(LocalDate localDate, ZoneId zoneId) {
-		//FIXME
-		return 24;
+		ZonedDateTime hourAtMidNight = localDate.atStartOfDay(zoneId);
+		ZonedDateTime hourAtMidNightNextDay = hourAtMidNight.plusDays(1);
+		Long difference = Duration.between(hourAtMidNight, hourAtMidNightNextDay).toHours();
+		return difference.intValue();
 	}
 
 	

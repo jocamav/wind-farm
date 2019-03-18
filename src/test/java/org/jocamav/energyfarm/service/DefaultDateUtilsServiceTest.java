@@ -19,7 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {DefaultDateUtilsService.class})
 public class DefaultDateUtilsServiceTest {
-	
+
+	private static final ZoneId ZONE_ID_LONDON = ZoneId.of("Europe/London");
+	private static final ZoneId ZONE_ID_MADRID = ZoneId.of("Europe/Madrid");
+	private static final ZoneId ZONE_ID_KIEV = ZoneId.of("Europe/Kiev");
+
 	private static final int HOUR_IN_MILLISECS = 1000 * 60 * 60;
 	
 	@Autowired
@@ -28,9 +32,9 @@ public class DefaultDateUtilsServiceTest {
 	@Test
 	public void getTimestampFromLocalDateInDifferentCountries() {
 		LocalDate localDate = LocalDate.parse("2017-01-01");
-		Timestamp timestampInLondon = dateUtilsService.getTimestampFromLocalDate(localDate, ZoneId.of("Europe/London"));
-		Timestamp timestampInMadrid = dateUtilsService.getTimestampFromLocalDate(localDate, ZoneId.of("Europe/Madrid"));
-		Timestamp timestampInKiev = dateUtilsService.getTimestampFromLocalDate(localDate, ZoneId.of("Europe/Kiev"));
+		Timestamp timestampInLondon = dateUtilsService.getTimestampFromLocalDate(localDate, ZONE_ID_LONDON);
+		Timestamp timestampInMadrid = dateUtilsService.getTimestampFromLocalDate(localDate, ZONE_ID_MADRID);
+		Timestamp timestampInKiev = dateUtilsService.getTimestampFromLocalDate(localDate, ZONE_ID_KIEV);
 
 		//The midnight Timestamp for the same day is lower in western countries
 		assertThat(timestampInLondon.getTime()).isGreaterThan(timestampInMadrid.getTime());
@@ -45,7 +49,7 @@ public class DefaultDateUtilsServiceTest {
 	@Test
 	public void getTimestampFromZoneInDifferentCountries() {
 		ZonedDateTime zonedDateTimeInLondon = LocalDateTime.parse("2017-12-31T23:00").atZone(ZoneId.of("Europe/London"));
-		ZonedDateTime zonedDateTimeInMadrid = LocalDateTime.parse("2018-01-01T00:00").atZone(ZoneId.of("Europe/Madrid"));
+		ZonedDateTime zonedDateTimeInMadrid = LocalDateTime.parse("2018-01-01T00:00").atZone(ZONE_ID_MADRID);
 		ZonedDateTime zonedDateTimeInKiev = LocalDateTime.parse("2018-01-01T01:00").atZone(ZoneId.of("Europe/Kiev"));
 		Timestamp timestampInLondon = dateUtilsService.getTimestampFromZonedDateTime(zonedDateTimeInLondon);
 		Timestamp timestampInMadrid = dateUtilsService.getTimestampFromZonedDateTime(zonedDateTimeInMadrid);
@@ -62,7 +66,7 @@ public class DefaultDateUtilsServiceTest {
 		calendarInLondon.setTimeInMillis(timestampInLondon.getTime());
 		calendarInLondon.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/London")));
 		calendarInMadrid.setTimeInMillis(timestampInMadrid.getTime());
-		calendarInMadrid.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Madrid")));
+		calendarInMadrid.setTimeZone(TimeZone.getTimeZone(ZONE_ID_MADRID));
 		calendarInKiev.setTimeInMillis(timestampInKiev.getTime());
 		calendarInKiev.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Kiev")));
 
@@ -89,16 +93,16 @@ public class DefaultDateUtilsServiceTest {
 		ZonedDateTime dateTimeInMadridBeforeChange = LocalDate
 				.parse(String.format("%d-%d-%d",year,month,day))
 				.atTime(hour, minute)
-				.atZone(ZoneId.of("Europe/Madrid"));
+				.atZone(ZONE_ID_MADRID);
 		Timestamp timestampInMadridBeforeChange = dateUtilsService.getTimestampFromZonedDateTime(dateTimeInMadridBeforeChange);
 		Timestamp timestampInMadridAfterChange = dateUtilsService.getTimestampFromZonedDateTime(dateTimeInMadridBeforeChange.plusMinutes(1));
 		
 		assertTimeStampNextMinute(timestampInMadridBeforeChange, timestampInMadridAfterChange);
 		Calendar calendarBeforeChange = Calendar.getInstance();
 		Calendar calendarAfterChange = Calendar.getInstance();
-		calendarBeforeChange.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Madrid")));
+		calendarBeforeChange.setTimeZone(TimeZone.getTimeZone(ZONE_ID_MADRID));
 		calendarBeforeChange.setTimeInMillis(timestampInMadridBeforeChange.getTime());
-		calendarAfterChange.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Madrid")));
+		calendarAfterChange.setTimeZone(TimeZone.getTimeZone(ZONE_ID_MADRID));
 		calendarAfterChange.setTimeInMillis(timestampInMadridAfterChange.getTime());
 		
 		assertDate(year, month, day, calendarBeforeChange, calendarAfterChange);
@@ -121,7 +125,7 @@ public class DefaultDateUtilsServiceTest {
 		ZonedDateTime dateTimeInMadridBeforeChange = LocalDate
 				.parse(String.format("%d-0%d-%d",year,month,day))
 				.atTime(hour, minute)
-				.atZone(ZoneId.of("Europe/Madrid"));
+				.atZone(ZONE_ID_MADRID);
 		Timestamp timestampInMadridBeforeChange = dateUtilsService.getTimestampFromZonedDateTime(dateTimeInMadridBeforeChange);
 		Timestamp timestampInMadridAfterChange = dateUtilsService.getTimestampFromZonedDateTime(dateTimeInMadridBeforeChange.plusMinutes(1));
 		
@@ -129,9 +133,9 @@ public class DefaultDateUtilsServiceTest {
 		Calendar calendarBeforeChange = Calendar.getInstance();
 		Calendar calendarAfterChange = Calendar.getInstance();
 		calendarBeforeChange.setTimeInMillis(timestampInMadridBeforeChange.getTime());
-		calendarBeforeChange.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Madrid")));
+		calendarBeforeChange.setTimeZone(TimeZone.getTimeZone(ZONE_ID_MADRID));
 		calendarAfterChange.setTimeInMillis(timestampInMadridAfterChange.getTime());
-		calendarAfterChange.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Madrid")));
+		calendarAfterChange.setTimeZone(TimeZone.getTimeZone(ZONE_ID_MADRID));
 		
 		assertDate(year, month, day, calendarBeforeChange, calendarAfterChange);
 		
@@ -155,5 +159,28 @@ public class DefaultDateUtilsServiceTest {
 		assertThat(calendarBeforeChange.get(Calendar.YEAR)).isEqualTo(calendarAfterChange.get(Calendar.YEAR));
 		assertThat(calendarBeforeChange.get(Calendar.YEAR)).isEqualTo(year);
 	}
-
+	
+	@Test
+	public void getNumberOfHoursOfAnyDay() {
+		LocalDate localDate = LocalDate.parse("2018-01-01");
+		int numberOfHours = dateUtilsService.getNumberOfHoursOfDay(localDate, ZONE_ID_MADRID);
+		
+		assertThat(numberOfHours).isEqualTo(24);
+	}
+	
+	@Test
+	public void getNumberOfHoursWhenChangeFrom02To03() {
+		LocalDate localDate = LocalDate.parse("2018-03-25");
+		int numberOfHours = dateUtilsService.getNumberOfHoursOfDay(localDate, ZONE_ID_MADRID);
+		
+		assertThat(numberOfHours).isEqualTo(23);
+	}
+	
+	@Test
+	public void getNumberOfHoursWhenChangeFrom03To02() {
+		LocalDate localDate = LocalDate.parse("2018-10-28");
+		int numberOfHours = dateUtilsService.getNumberOfHoursOfDay(localDate, ZONE_ID_MADRID);
+		
+		assertThat(numberOfHours).isEqualTo(25);
+	}
 }
