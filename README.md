@@ -7,7 +7,7 @@ The current solution uses different design patterns:
 To execute the application locally, execute:
 
 ```
-mvn spring-bot:run
+mvn spring-boot:run
 ```
 
 Example of request:
