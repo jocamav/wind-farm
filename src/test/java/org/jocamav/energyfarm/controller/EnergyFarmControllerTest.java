@@ -75,15 +75,15 @@ public class EnergyFarmControllerTest {
 
 		this.mockMvc.perform(
         		get("/api/farm/capacity/{type}/{id}","wind", "1")
-        		.param("dateFrom", "2019-01-01")
-        		.param("dateTo", "2019-03-30")
+        		.param("startDate", "2019-01-01")
+        		.param("endDate", "2019-03-30")
 	        	.contentType(MediaType.APPLICATION_JSON)
         	).andDo(print())
         	.andExpect(status().isOk())
         	.andDo(document("{class-name}/{method-name}",
         			requestParameters(
-            			parameterWithName("dateFrom").description("Date from in ISO format (YYYY-MM-DD) to get the result"),
-            			parameterWithName("dateTo").description("Date to in ISO format (YYYY-MM-DD) to get the result")
+            			parameterWithName("startDate").description("Date from in ISO format (YYYY-MM-DD) to get the result"),
+            			parameterWithName("endDate").description("Date to in ISO format (YYYY-MM-DD) to get the result")
         			),
         			pathParameters( 
         				parameterWithName("type").description("Type of farm (e.g. wind)"),
@@ -119,8 +119,8 @@ public class EnergyFarmControllerTest {
 	public void getFarmCapacityForNotExistingFarm() throws Exception{
 		this.mockMvc.perform(
         		get("/api/farm/capacity/{type}/{id}","wind", "2")
-        		.param("dateFrom", "2019-01-01")
-        		.param("dateTo", "2019-03-30")
+        		.param("startDate", "2019-01-01")
+        		.param("endDate", "2019-03-30")
 	        	.contentType(MediaType.APPLICATION_JSON)
         	).andDo(print())
         	.andExpect(status().isUnprocessableEntity())

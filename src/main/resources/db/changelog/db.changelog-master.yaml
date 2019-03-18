@@ -1,0 +1,67 @@
+databaseChangeLog:
+- changeSet:
+    id: 1552941539193-1
+    author: carlos (generated)
+    changes:
+    - createSequence:
+        sequenceName: hibernate_sequence
+- changeSet:
+    id: 1552941539193-2
+    author: carlos (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              primaryKey: true
+              primaryKeyName: hourly_production_pkey
+            name: id
+            type: BIGINT
+        - column:
+            name: electricity_produced
+            type: FLOAT8
+        - column:
+            name: timestamp
+            type: TIMESTAMP WITHOUT TIME ZONE
+        - column:
+            name: wind_farm_id
+            type: BIGINT
+        tableName: hourly_production
+- changeSet:
+    id: 1552941539193-3
+    author: carlos (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              primaryKey: true
+              primaryKeyName: wind_farm_pkey
+            name: id
+            type: BIGINT
+        - column:
+            name: capacity
+            type: FLOAT8
+        - column:
+            name: name
+            type: VARCHAR(255)
+        - column:
+            name: zone_id
+            type: BYTEA
+        tableName: wind_farm
+- changeSet:
+    id: 1552941539193-4
+    author: carlos (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: wind_farm_id
+        baseTableName: hourly_production
+        constraintName: fkpiel5plat1o960eik2376s78d
+        deferrable: false
+        initiallyDeferred: false
+        onDelete: NO ACTION
+        onUpdate: NO ACTION
+        referencedColumnNames: id
+        referencedTableName: wind_farm
+        validate: true
+

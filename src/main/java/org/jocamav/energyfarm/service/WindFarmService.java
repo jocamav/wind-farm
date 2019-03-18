@@ -40,15 +40,14 @@ public class WindFarmService implements FarmService{
 		return getWindFarmDtoFromHourlyProduction(windFarm, farmProduction);
 	}
 
+	private WindFarm getWindFarm(Long id) {
+		return windFarmRepository.getOne(id);
+	}
 
 	private List<HourlyProduction> getProductionFromDatabase(WindFarm windFarm, LocalDate dateFrom, LocalDate dateTo) {
 		Timestamp timeFrom = getTimestampForFarm(dateFrom, windFarm);
-		Timestamp timeTo = getTimestampForFarm(dateTo, windFarm);
+		Timestamp timeTo = getTimestampForFarm(dateTo.plusDays(1), windFarm);
 		return hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarm, timeFrom, timeTo);
-	}
-	
-	private WindFarm getWindFarm(Long id) {
-		return windFarmRepository.getOne(id);
 	}
 
 	private Timestamp getTimestampForFarm(LocalDate dateFrom, WindFarm windFarm) {
@@ -61,54 +60,67 @@ public class WindFarmService implements FarmService{
 		return energyFarmDto;
 	}
 
-	private void addDailyProductionInfo(List<HourlyProduction> farmProduction, WindFarmDto energyFarmDto, WindFarm windFarm) {
-		
-		Double producedEnergy = getTotalEnergyProduced(farmProduction);
-		
-		List<CapacityPerDayDto> dailyCapacity;
-		dailyCapacity = farmProduction.stream()
-			.map(hourlyProduction -> getCapacityPerDayDtoFromEntity(hourlyProduction))
-			.collect(Collectors.toList());
-		
-		Map<LocalDate, Double> resultGroupByLocaldate = dailyCapacity.stream()
-			.collect(
-					Collectors.groupingBy(
-							CapacityPerDayDto::getDay,
-							Collectors.summingDouble(CapacityPerDayDto::getCapacity)
-					)
-			);
-		
-		dailyCapacity = resultGroupByLocaldate.entrySet().stream()
-			.map(entry -> {
-				LocalDate localDate = entry.getKey();
-				Double energyGeneratedInDay = entry.getValue();
-				int numberOfHoursPerDay = dateUtilsService.getNumberOfHoursOfDay(localDate, windFarm.getZoneId());
-				return new CapacityPerDayDto(localDate, energyGeneratedInDay/(windFarm.getCapacity()*numberOfHoursPerDay));
-				})
-			.collect(Collectors.toList());
-		
-		energyFarmDto.setDailyCapacity(dailyCapacity);
-		energyFarmDto.setProducedEnergy(producedEnergy);
-	}
-
-
-	private double getTotalEnergyProduced(List<HourlyProduction> farmProduction) {
-		return farmProduction.stream()
-				.mapToDouble(hourlyProduction -> hourlyProduction.getElectricityProduced())
-				.sum();
-	}
-	
-	private CapacityPerDayDto getCapacityPerDayDtoFromEntity(HourlyProduction hourlyProduction) {
-		return new CapacityPerDayDto(hourlyProduction.getTimestamp().toLocalDateTime().toLocalDate(), 
-				hourlyProduction.getElectricityProduced());
-	}
-
-
 	private WindFarmDto initWindFarmDto(WindFarm windFarm) {
 		WindFarmDto energyFarmDto = new WindFarmDto();
 		energyFarmDto.setId(windFarm.getId());
 		energyFarmDto.setZoneId(windFarm.getZoneId());
 		return energyFarmDto;
+	}
+	
+	private void addDailyProductionInfo(List<HourlyProduction> farmProduction, WindFarmDto energyFarmDto, WindFarm windFarm) {
+		
+		Double producedEnergy = getTotalEnergyProduced(farmProduction);
+		List<CapacityPerDayDto> dailyCapacity = getDailyCapacityFromHourlyProduction(windFarm, farmProduction);
+
+		energyFarmDto.setProducedEnergy(producedEnergy);
+		energyFarmDto.setDailyCapacity(dailyCapacity);
+	}
+	
+	private double getTotalEnergyProduced(List<HourlyProduction> farmProduction) {
+		return farmProduction.stream()
+				.mapToDouble(hourlyProduction -> hourlyProduction.getElectricityProduced())
+				.sum();
+	}
+
+	private List<CapacityPerDayDto> getDailyCapacityFromHourlyProduction(WindFarm windFarm, List<HourlyProduction> farmProduction) {
+		List<CapacityPerDayDto> dailyCapacity =  convertHourlyProductionToDto(farmProduction);
+		
+		Map<LocalDate, Double> resultGroupByLocaldate = getDailyCapacityGroupByDate(dailyCapacity);
+		dailyCapacity = calculateCapacityFactorFromGroupMap(windFarm, resultGroupByLocaldate);
+		
+		return dailyCapacity;
+	}
+
+	private List<CapacityPerDayDto> convertHourlyProductionToDto(List<HourlyProduction> farmProduction) {
+		return farmProduction.stream()
+			.map(hourlyProduction -> getCapacityPerDayDtoFromEntity(hourlyProduction))
+			.collect(Collectors.toList());
+	}
+
+	private CapacityPerDayDto getCapacityPerDayDtoFromEntity(HourlyProduction hourlyProduction) {
+		return new CapacityPerDayDto(hourlyProduction.getTimestamp().toLocalDateTime().toLocalDate(), 
+				hourlyProduction.getElectricityProduced());
+	}
+
+	private List<CapacityPerDayDto> calculateCapacityFactorFromGroupMap(WindFarm windFarm, Map<LocalDate, Double> resultGroupByLocaldate) {
+		return resultGroupByLocaldate.entrySet().stream()
+			.map(entry -> {
+				LocalDate localDate = entry.getKey();
+				Double energyGeneratedInDay = entry.getValue();
+				int numberOfHoursPerDay = dateUtilsService.getNumberOfHoursOfDay(localDate, windFarm.getZoneId());
+				return new CapacityPerDayDto(localDate, energyGeneratedInDay/(windFarm.getCapacity()*numberOfHoursPerDay));
+			})
+			.collect(Collectors.toList());
+	}
+
+	private Map<LocalDate, Double> getDailyCapacityGroupByDate(List<CapacityPerDayDto> dailyCapacity) {
+		return dailyCapacity.stream()
+				.collect(
+						Collectors.groupingBy(
+								CapacityPerDayDto::getDay,
+								Collectors.summingDouble(CapacityPerDayDto::getCapacity)
+						)
+				);
 	}
 
 }

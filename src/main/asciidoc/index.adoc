@@ -35,5 +35,3 @@ include::{snippets}/energy-farm-controller-test/get-farm-capacity-with-missing-p
 include::{snippets}/energy-farm-controller-test/get-farm-capacity-with-missing-parameter/http-response.adoc[]
 
 
-
-As you can see the format is very simple, and in fact you always get the same message.

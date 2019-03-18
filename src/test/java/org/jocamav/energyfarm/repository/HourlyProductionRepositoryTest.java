@@ -99,13 +99,18 @@ public class HourlyProductionRepositoryTest {
 
 		timeTo = getTimeStamp("2018-10-05T02:01:00", windFarmMadrid.getZoneId()); //2018-10-5 02:01
 		energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
-		assertThat(energyProductionsOfMadrid.size()).isEqualTo(3);
+		assertThat(energyProductionsOfMadrid.size()).isEqualTo(2);
 		
 		timeFrom = getTimeStamp("2018-10-01T01:02:00", windFarmMadrid.getZoneId()); //2018-10-1 01:02
 		energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
-		assertThat(energyProductionsOfMadrid.size()).isEqualTo(3);
+		assertThat(energyProductionsOfMadrid.size()).isEqualTo(2);
 
 		timeFrom = getTimeStamp("2018-10-01T01:01:00", windFarmMadrid.getZoneId()); //2018-10-1 01:01
+		energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
+		assertThat(energyProductionsOfMadrid.size()).isEqualTo(3);
+		
+
+		timeTo = getTimeStamp("2018-10-05T02:01:01", windFarmMadrid.getZoneId()); //2018-10-1 01:01:01
 		energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
 		assertThat(energyProductionsOfMadrid.size()).isEqualTo(4);
 	}

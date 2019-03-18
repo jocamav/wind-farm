@@ -32,11 +32,11 @@ public class EnergyFarmController {
 	@GetMapping("/capacity/{type}/{id}")
 	public EnergyFarmDto getFarmCapacityPerDay(
 			@PathVariable String type, @PathVariable Long id,
-			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
-			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
-		log.info(String.format("Getting capacity of %s farm <%d> from %s to %s", type, id, dateFrom, dateTo));
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+		log.info(String.format("Getting capacity of %s farm <%d> from %s to %s", type, id, startDate, endDate));
 		FarmService farmService = getFarmService(type);
-		return farmService.getEnergyFarmCapacity(id, dateFrom, dateTo);
+		return farmService.getEnergyFarmCapacity(id, startDate, endDate);
 	}
 	
 	private FarmService getFarmService(String type) {

@@ -1,5 +1,7 @@
 package org.jocamav.energyfarm;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -36,6 +38,13 @@ public class WindFarmManagerApplication {
 		}
 		WindFarmRepository windFarmRepository = ctx.getBean(WindFarmRepository.class);
 		HourlyProductionRepository hourlyProductionRepository = ctx.getBean(HourlyProductionRepository.class);
+		
+		//Just to check the Hostname (issue with slow start time of Spring Boot)
+		try {
+			log.info(String.format("Hostname: %s", InetAddress.getLocalHost().getHostName()));
+		} catch (UnknownHostException e) {
+			log.warn(String.format("Hostname exception: %s", e.getMessage()));
+		}
 		
 		//Init the Database
 		if(windFarmRepository.findAll().size() == 0 ) {
