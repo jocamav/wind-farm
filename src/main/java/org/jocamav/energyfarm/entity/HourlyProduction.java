@@ -71,8 +71,7 @@ public class HourlyProduction {
 	public static class Builder {
 		private Long id;
 		private WindFarm windFarm;
-		private String dateAsString;
-		private LocalDateTime localDateTime;
+		private ZonedDateTime zonedDateTime;
 		private Double electricityProduced;
 	
 		public Builder withId(Long id) {
@@ -90,21 +89,12 @@ public class HourlyProduction {
 			return this;
 		}
 		
-		public Builder withLocalDateTime(String dateAsString) {
-			this.dateAsString = dateAsString;
-			return this;
-		}
-		
-		public Builder withLocalDateTime(LocalDateTime localDateTime) {
-			this.localDateTime = localDateTime;
+		public Builder withZonedDateTime(ZonedDateTime zonedDateTime) {
+			this.zonedDateTime = zonedDateTime;
 			return this;
 		}
 		
 		public HourlyProduction build() {
-			if(localDateTime == null) {
-				localDateTime = LocalDateTime.parse(dateAsString);
-			}
-			ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, windFarm.getZoneId());
 			HourlyProduction hourlyProduction =  new HourlyProduction(windFarm, Timestamp.from(zonedDateTime.toInstant()), electricityProduced);
 			hourlyProduction.setId(id);
 			return hourlyProduction;

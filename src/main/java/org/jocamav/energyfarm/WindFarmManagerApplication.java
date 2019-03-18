@@ -3,6 +3,7 @@ package org.jocamav.energyfarm;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Random;
 
 import org.jocamav.energyfarm.entity.HourlyProduction;
@@ -58,19 +59,19 @@ public class WindFarmManagerApplication {
 		LocalDate dateTo  = LocalDate.of(2019, 1, 1); 
 		LocalDate currentDay = dateFrom;
 		while(!currentDay.isAfter(dateTo)) {
-			for(int i = 0; i<24; i++) {
-				LocalDateTime localDateTime = currentDay.atStartOfDay();
-				localDateTime = localDateTime.plusHours(i);
-				hourlyProductionRepository.save(getRandomProduction(windFarm, localDateTime));
+			ZonedDateTime zonedDateTime = currentDay.atStartOfDay().atZone(windFarm.getZoneId());
+			while(currentDay.getDayOfMonth() == zonedDateTime.getDayOfMonth()) {
+				hourlyProductionRepository.save(getRandomProduction(windFarm, zonedDateTime));
+				zonedDateTime = zonedDateTime.plusHours(1);
 			}
 			currentDay = currentDay.plusDays(1L);
 		}
 	}
 	
-	private static HourlyProduction getRandomProduction(WindFarm windFarm, LocalDateTime localDateTime) {
+	private static HourlyProduction getRandomProduction(WindFarm windFarm, ZonedDateTime zonedDateTime) {
 		return new HourlyProduction.Builder()
 			.withWindFarm(windFarm)
-			.withLocalDateTime(localDateTime)
+			.withZonedDateTime(zonedDateTime)
 			.withElectricityProduced(generateRandomValue(windFarm))
 			.build();
 			

@@ -8,4 +8,5 @@ import java.time.ZonedDateTime;
 public interface DateUtilsService {
 	Timestamp getTimestampFromLocalDate(LocalDate localDate, ZoneId zoneId);
 	Timestamp getTimestampFromZonedDateTime(ZonedDateTime zonedDateTime);
+	int getNumberOfHoursOfDay(LocalDate localDate, ZoneId zoneId);
 }

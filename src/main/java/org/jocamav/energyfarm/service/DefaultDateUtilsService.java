@@ -19,4 +19,11 @@ public class DefaultDateUtilsService implements DateUtilsService {
 		return Timestamp.from(zonedDateTime.toInstant());
 	}
 
+	public int getNumberOfHoursOfDay(LocalDate localDate, ZoneId zoneId) {
+		//FIXME
+		return 24;
+	}
+
+	
+
 }

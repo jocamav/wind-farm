@@ -49,10 +49,11 @@ public class HourlyProductionRepositoryTest {
 	}
 	
 	private HourlyProduction getHourlyProduction(WindFarm windfarm, double production, String dateAsString) {
+		ZonedDateTime zonedDateTime = LocalDateTime.parse(dateAsString).atZone(windfarm.getZoneId());
 		return new HourlyProduction.Builder()
 				.withWindFarm(windfarm)
 				.withElectricityProduced(production)
-				.withLocalDateTime(dateAsString)
+				.withZonedDateTime(zonedDateTime)
 				.build();
 	}
 	
@@ -95,30 +96,19 @@ public class HourlyProductionRepositoryTest {
 		Timestamp timeTo = getTimeStamp("2018-10-05T02:00:00", windFarmMadrid.getZoneId()); //2018-10-5 02:00
 		Collection<HourlyProduction> energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
 		assertThat(energyProductionsOfMadrid.size()).isEqualTo(2);
-		checkOrderOfTimeStamps(energyProductionsOfMadrid);
 
 		timeTo = getTimeStamp("2018-10-05T02:01:00", windFarmMadrid.getZoneId()); //2018-10-5 02:01
 		energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
 		assertThat(energyProductionsOfMadrid.size()).isEqualTo(3);
-		checkOrderOfTimeStamps(energyProductionsOfMadrid);
 		
 		timeFrom = getTimeStamp("2018-10-01T01:02:00", windFarmMadrid.getZoneId()); //2018-10-1 01:02
 		energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
 		assertThat(energyProductionsOfMadrid.size()).isEqualTo(3);
-		checkOrderOfTimeStamps(energyProductionsOfMadrid);
 
 		timeFrom = getTimeStamp("2018-10-01T01:01:00", windFarmMadrid.getZoneId()); //2018-10-1 01:01
 		energyProductionsOfMadrid = hourlyProductionRepository.findByWindFarmWithTimestampBetween(windFarmMadrid, timeFrom, timeTo);
 		assertThat(energyProductionsOfMadrid.size()).isEqualTo(4);
-		checkOrderOfTimeStamps(energyProductionsOfMadrid);
 	}
 	
-	private void checkOrderOfTimeStamps(Collection<HourlyProduction> energyProductions) {
-		long previousTimestamp = 0;
-		for(HourlyProduction hourlyProduction : energyProductions) {
-			assertThat(hourlyProduction.getTimestamp().getTime()).isGreaterThan(previousTimestamp);
-			previousTimestamp = hourlyProduction.getTimestamp().getTime();
-		}
-	}
 	
 }

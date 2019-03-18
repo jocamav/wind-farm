@@ -79,9 +79,13 @@ public class WindFarmService implements FarmService{
 			);
 		
 		dailyCapacity = resultGroupByLocaldate.entrySet().stream()
-			.map(entry -> new CapacityPerDayDto(entry.getKey(), entry.getValue()/(windFarm.getCapacity()*24)))
+			.map(entry -> {
+				LocalDate localDate = entry.getKey();
+				Double energyGeneratedInDay = entry.getValue();
+				int numberOfHoursPerDay = dateUtilsService.getNumberOfHoursOfDay(localDate, windFarm.getZoneId());
+				return new CapacityPerDayDto(localDate, energyGeneratedInDay/(windFarm.getCapacity()*numberOfHoursPerDay));
+				})
 			.collect(Collectors.toList());
-		
 		
 		energyFarmDto.setDailyCapacity(dailyCapacity);
 		energyFarmDto.setProducedEnergy(producedEnergy);
